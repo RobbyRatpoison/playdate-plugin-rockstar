@@ -1,0 +1,16 @@
+{
+    "id": "rockstar",
+    "name": "Rockstar Games",
+    "version": "1.0.0",
+    "platform": "rockstar",
+    "author": "RobbyRatpoison",
+    "launcher": {
+        "required": false
+    },
+    "source": "github:RobbyRatpoison/playdate-plugin-rockstar",
+    "platform_status": {
+        "windows": "untested",
+        "linux": "broken",
+        "mac": "untested"
+    }
+}
