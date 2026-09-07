@@ -39,6 +39,24 @@ def status():
     })
 
 
+@bp.route('/start-launcher', methods=['POST'])
+def start_launcher():
+    from plugins.rockstar import plugin
+    return jsonify(plugin.start_launcher())
+
+
+@bp.route('/open-folder', methods=['POST'])
+def open_folder_route():
+    import os
+    from . import _find_wine_launcher_config
+    from runners.installdir import open_folder
+    prefix, _wine_bin, _exe = _find_wine_launcher_config()
+    if not prefix:
+        return jsonify({'status': 'error', 'message': 'No Wine prefix configured'}), 400
+    open_folder(os.path.join(prefix, 'drive_c', 'Program Files', 'Rockstar Games'))
+    return jsonify({'status': 'ok'})
+
+
 @bp.route('/sync', methods=['POST'])
 def sync():
     from .rockstar import start_library_sync, is_connected
@@ -50,10 +68,22 @@ def sync():
     return jsonify({'status': 'started'})
 
 
+@bp.route('/sync-local', methods=['POST'])
+def sync_local():
+    from .rockstar import start_local_library_sync
+    return jsonify(start_local_library_sync())
+
+
 @bp.route('/sync-status')
 def sync_status():
     from .rockstar import get_sync_state
     return jsonify(get_sync_state())
+
+
+@bp.route('/uninstall/<int:appid>', methods=['POST'])
+def uninstall(appid):
+    from plugins.rockstar import plugin
+    return jsonify(plugin.uninstall_game(appid))
 
 
 @bp.route('/rescrape/<int:appid>', methods=['POST'])

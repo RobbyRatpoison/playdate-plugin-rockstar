@@ -1,7 +1,49 @@
+async function rockstarStartLauncher() {
+    const btn = document.querySelector('button[onclick="rockstarStartLauncher()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Starting…'; }
+    try {
+        const r = await fetch('/api/rockstar/start-launcher', { method: 'POST' });
+        const d = await r.json();
+        if (btn) btn.textContent = d.status === 'success' ? 'Started' : (d.message || 'Failed');
+    } catch (e) {
+        if (btn) btn.textContent = 'Failed';
+    } finally {
+        setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = 'Start Launcher'; } }, 3000);
+    }
+}
+
+async function rockstarOpenFolder() {
+    const st = document.getElementById('rockstar-manage-status-folder');
+    try {
+        const r = await fetch('/api/rockstar/open-folder', { method: 'POST' });
+        const d = await r.json();
+        if (d.status !== 'ok' && st) st.textContent = d.message || 'Failed to open folder';
+    } catch (e) {
+        if (st) st.textContent = 'Network error';
+    }
+}
+
 function rockstarSync() {
     var statusEl = document.getElementById('rockstar-manage-status-main');
     if (statusEl) statusEl.textContent = 'Starting sync…';
     fetch('/api/rockstar/sync', { method: 'POST' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                if (statusEl) statusEl.textContent = 'Error: ' + data.error;
+                return;
+            }
+            _rockstarPoll(statusEl);
+        })
+        .catch(function(e) {
+            if (statusEl) statusEl.textContent = 'Error: ' + e.message;
+        });
+}
+
+function rockstarSyncLocal() {
+    var statusEl = document.getElementById('rockstar-manage-status-sync_local');
+    if (statusEl) statusEl.textContent = 'Starting sync…';
+    fetch('/api/rockstar/sync-local', { method: 'POST' })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.error) {

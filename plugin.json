@@ -1,16 +1,26 @@
 {
     "id": "rockstar",
     "name": "Rockstar Games",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "platform": "rockstar",
     "author": "RobbyRatpoison",
     "launcher": {
-        "required": false
+        "required": true,
+        "name": "Rockstar Games Launcher",
+        "exe_name": "Launcher.exe",
+        "installer": {
+            "url": "https://gamedownloads-rockstargames-com.akamaized.net/public/installer/Rockstar-Games-Launcher.exe",
+            "type": "exe",
+            "winearch": "win64",
+            "win_version": "win10",
+            "winetricks": ["vcrun2019", "corefonts"],
+            "detached_launcher": true
+        }
     },
     "source": "github:RobbyRatpoison/playdate-plugin-rockstar",
     "platform_status": {
         "windows": "untested",
-        "linux": "broken",
+        "linux": "working",
         "mac": "untested"
     }
 }
