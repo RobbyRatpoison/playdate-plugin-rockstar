@@ -565,19 +565,30 @@ def resync_installed():
     """Re-check the installed flag/install_path for every Rockstar game
     against the configured Wine prefix. Called at plugin startup and after a
     backup restore -- picks up installs finished through the Launcher's own
-    GUI that PlayDate never watched happen."""
-    prefix, _wine_bin, _launcher_exe = _launcher_config()
-    if not prefix:
-        return
-    metadata = _title_metadata()
+    GUI that PlayDate never watched happen.
+
+    A missing or absent prefix means nothing on this platform can be
+    installed, so stale installed=1 rows get cleared too (e.g. the prefix was
+    deleted after a game was installed -- otherwise the "Installed" badge and
+    Open Folder disagree forever, since nothing else downgrades the flag).
+    Read the prefix straight from config rather than via _launcher_config(),
+    which also returns nothing when Launcher.exe can't be found -- here we
+    only care whether the prefix directory itself exists."""
+    cfg    = (load_config() or {}).get('launchers', {}).get('rockstar', {})
+    prefix = (cfg.get('prefix') or '').strip()
+    have_prefix = bool(prefix) and os.path.isdir(prefix)
+
+    metadata = _title_metadata() if have_prefix else {}
     db = get_db()
     rows = db.execute(
         "SELECT appid, platform_id, installed FROM games WHERE platform='rockstar'"
     ).fetchall()
     for row in rows:
-        title_id = (row['platform_id'] or '').strip()
-        exe_name = metadata.get(title_id, {}).get('principalFileName')
-        exe      = _find_game_exe(prefix, exe_name) if exe_name else None
+        exe = None
+        if have_prefix:
+            title_id = (row['platform_id'] or '').strip()
+            exe_name = metadata.get(title_id, {}).get('principalFileName')
+            exe      = _find_game_exe(prefix, exe_name) if exe_name else None
         now_installed = 1 if exe else 0
         if bool(row['installed']) != bool(now_installed):
             update_game_data(row['appid'], installed=now_installed,
