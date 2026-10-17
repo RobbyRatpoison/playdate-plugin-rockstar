@@ -58,6 +58,17 @@ class RockstarPlugin:
     platform = 'rockstar'
     label    = 'Rockstar Games'
 
+    def sync(self):
+        from .rockstar import is_connected, start_library_sync, start_local_library_sync
+        return start_library_sync() if is_connected() else start_local_library_sync()
+
+    def sync_status(self):
+        """Outcome of the last library sync, for core's startup sync (see PLUGINS.md)."""
+        from .rockstar import get_sync_state, is_connected, _launcher_log_dir
+        st = get_sync_state()
+        return {'running': bool(st.get('running')), 'error': st.get('error'),
+                'connected': bool(is_connected() or _launcher_log_dir())}
+
     def register(self, app):
         from .routes import bp
         app.register_blueprint(bp)
